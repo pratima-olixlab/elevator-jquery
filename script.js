@@ -1,4 +1,3 @@
-// app.js
 $(document).ready(function () {
     const elevators = [
         { id: 'elevator1', floor: 0, busy: false },
@@ -9,13 +8,47 @@ $(document).ready(function () {
     ];
 
     const elevatorQueue = [];
+    const waitingTimes = {};
+
+    elevators.forEach((elevator, index) => {
+        $(`#${elevator.id}`).css('--elevator-index', index + 1);
+    });
 
     $('.call-btn').on('click', function () {
-        const floor = $(this).parent().data('floor');
-        $(this).addClass('waiting').text('Waiting');
+        const floor = $(this).data('floor');
+        const $btn = $(this);
+
+        if ($btn.hasClass('waiting')) {
+            return;
+        }
+
+        $btn.addClass('waiting').text('Waiting').prop('disabled', true);
+
+        if (!waitingTimes[floor]) {
+            waitingTimes[floor] = {
+                startTime: new Date(),
+                element: $btn,
+                interval: setInterval(() => updateWaitingTimes(floor), 1000)
+            };
+        } else {
+            waitingTimes[floor].startTime = new Date();
+        }
+
+        updateWaitingTimes(floor);
+
         elevatorQueue.push(floor);
         processQueue();
     });
+
+    function updateWaitingTimes(floor) {
+        const waitTime = waitingTimes[floor];
+        const elapsed = Math.floor((new Date() - waitTime.startTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+
+        waitTime.element.siblings('.waiting-time').remove();
+        waitTime.element.after(`<span class="waiting-time">Waiting: ${minutes} min ${seconds} sec</span>`);
+    }
 
     function processQueue() {
         if (elevatorQueue.length > 0) {
@@ -50,25 +83,36 @@ $(document).ready(function () {
         elevator.busy = true;
         const $elevator = $(`#${elevator.id}`);
         const distance = Math.abs(elevator.floor - targetFloor);
-        const travelTime = distance * 1000; // Assuming 1s per floor
+        const travelTime = (distance) * 1000;
 
-        $elevator.addClass('moving').css('bottom', `${targetFloor * 50}px`);
+        $elevator.css('transition', `bottom ${travelTime / 1000}s linear`);
+
+        $elevator.addClass('moving').css('bottom', `${targetFloor * 55}px`);
         setTimeout(() => {
             elevator.floor = targetFloor;
-            $elevator.removeClass('moving').addClass('red');
+            $elevator.removeClass('moving').addClass('arrived');
+            makeSound();
             setTimeout(() => {
-                makeSound();
-                $elevator.removeClass('red').addClass('green');
+                $elevator.removeClass('arrived').addClass('finished');
+                const $btn = $(`#call-buttons .call-btn[data-floor="${targetFloor}"]`);
+                $btn.removeClass('waiting').addClass('arrived').text('Arrived').prop('disabled', false);
+
+                if (waitingTimes[targetFloor]) {
+                    clearInterval(waitingTimes[targetFloor].interval);
+                    waitingTimes[targetFloor].element.siblings('.waiting-time').remove();
+                    delete waitingTimes[targetFloor];
+                }
+
                 setTimeout(() => {
-                    $elevator.removeClass('green').css('background-color', 'black');
-                    $(`.floor[data-floor="${targetFloor}"] .call-btn`).removeClass('waiting').text('Arrived');
-                    setTimeout(() => {
-                        $(`.floor[data-floor="${targetFloor}"] .call-btn`).text('Call');
-                        elevator.busy = false;
-                        processQueue();
-                    }, 2000);
+                    $btn.text('Call').removeClass('arrived');
+                    $elevator.removeClass('finished waiting').css({
+                        'background-color': '',
+                        'transition': 'bottom 1s linear'
+                    });
+                    elevator.busy = false;
+                    processQueue();
                 }, 2000);
-            }, 1000);
+            }, 2000);
         }, travelTime);
     }
 
