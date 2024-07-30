@@ -1,0 +1,84 @@
+/* styles.css */
+body {
+    display: flex;
+    justify-content: center;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+}
+
+#container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 80%;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#building {
+    display: flex;
+    flex-direction: column-reverse;
+    width: 20%;
+    gap: 10px;
+}
+
+.floor {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 10px;
+    border: 1px solid #000;
+    background-color: #fff;
+}
+
+.call-btn {
+    padding: 5px 10px;
+    background-color: green;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.call-btn.waiting {
+    background-color: red;
+    cursor: not-allowed;
+}
+
+#elevators {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    width: 60%;
+    height: 500px;
+    position: relative;
+    border: 1px solid #000;
+    background-color: #fff;
+    background-image: linear-gradient(to top, #e0e0e0 1px, transparent 1px);
+    background-size: 100% 50px; /* Adjust this for floor spacing */
+}
+
+.elevator {
+    width: 40px;
+    height: 40px;
+    background-image: url('images/elevator.svg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    position: absolute;
+    bottom: 0;
+}
+
+.elevator.moving {
+    transition: bottom 1s linear;
+}
+
+.elevator.red {
+    background-color: transparent;
+}
+
+.elevator.green {
+    background-color: transparent;
+}
