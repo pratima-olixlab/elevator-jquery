@@ -106,7 +106,7 @@ body {
 
 .call-btn.waiting {
     background-color: red;
-    cursor: not-allowed;
+    /* cursor: not-allowed; */
 }
 
 .call-btn.arrived {
